@@ -1,0 +1,7 @@
+// Test WITH parentheses
+class Main {
+   function void main() {
+      do Output.printInt(2 + (3 * 4));
+      return;
+   }
+}

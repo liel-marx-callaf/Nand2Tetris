@@ -1,0 +1,17 @@
+class Main{
+		function void main(){
+			var int x, i,L,R;
+			let x = 8;
+			let i = 5000;
+
+			while((x = 8) | (x=5)){
+				let L = ^x;
+				let i = i + 1;
+				do Memory.poke(i,L); 
+				let R = #x;
+				let i = i + 1;
+				do Memory.poke(i,R);
+				let x = (x - 3);
+			}
+			return;
+		}
