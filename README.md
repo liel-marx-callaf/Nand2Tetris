@@ -57,40 +57,40 @@ projects/
 
 ## Project Breakdown
 
-### Project 01 — Elementary Logic Gates
+### Project 01 - Elementary Logic Gates
 Implemented the basic building blocks of the Hack hardware platform using HDL, including primitive combinational chips such as multiplexers, demultiplexers, and multi-bit logic gates. This project establishes the gate-level foundation used throughout the rest of the stack.
 
-### Project 02 — Arithmetic Logic Components
+### Project 02 - Arithmetic Logic Components
 Built arithmetic and bitwise chips such as adders, incrementers, and the **ALU**, combining lower-level gates into reusable computational units. This project defines the core arithmetic behavior that later powers the CPU.
 
-### Project 03 — Sequential Logic and Memory
+### Project 03 - Sequential Logic and Memory
 Implemented clocked hardware components including bit registers, multi-bit registers, RAM units, and the program counter. The challenge here was moving from pure combinational logic to stateful sequential systems.
 
-### Project 04 — Machine Language Programming
+### Project 04 - Machine Language Programming
 Wrote low-level programs directly in **Hack assembly**, working close to the hardware execution model. This project focuses on control flow, memory access, and problem solving without the abstraction of a high-level language.
 
-### Project 05 — Computer Architecture
+### Project 05 - Computer Architecture
 Integrated the previously built components into a complete **Hack computer**, including CPU, instruction memory, data memory, and overall execution flow. This project is the architectural milestone where individual chips become a functioning machine.
 
-### Project 06 — Assembler
+### Project 06 - Assembler
 Developed an assembler that translates Hack assembly programs into binary machine code. The implementation handles parsing, symbol resolution, and instruction encoding, bridging human-readable assembly and executable hardware instructions.
 
-### Project 07 — VM Translator I
+### Project 07 - VM Translator I
 Implemented the first stage of the **VM translator**, converting stack arithmetic and memory access commands into Hack assembly. This project introduces the intermediate abstraction layer that decouples high-level language compilation from the target hardware.
 
-### Project 08 — VM Translator II
+### Project 08 - VM Translator II
 Extended the VM translator to support branching, function calls, returns, and multi-file program translation. The main challenge was preserving correct call-frame behavior and execution flow across nested routines.
 
-### Project 09 — Jack Application
+### Project 09 - Jack Application
 Built an application in **Jack** to exercise the software stack from the high-level language downward. This stage demonstrates how user programs interact with the VM, compiler, and operating system layers built in the later projects.
 
-### Project 10 — Syntax Analysis
+### Project 10 - Syntax Analysis
 Implemented the front end of the Jack compiler, including tokenization and parsing into the language grammar. This project focuses on turning raw source code into a structured syntactic representation.
 
-### Project 11 — Compiler Code Generation
+### Project 11 - Compiler Code Generation
 Extended the compiler to emit VM code from parsed Jack programs. The implementation covers symbol management, expression compilation, control structures, subroutine handling, and object-oriented language constructs.
 
-### Project 12 — Operating System
+### Project 12 - Operating System
 Implemented core components of the **Jack OS**, including standard library functionality such as memory handling, screen output, math support, strings, arrays, and keyboard interaction. This completes the software platform needed to run nontrivial high-level applications on the Hack computer.
 
 ## What This Repository Demonstrates
