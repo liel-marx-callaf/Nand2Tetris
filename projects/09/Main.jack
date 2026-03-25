@@ -1,0 +1,160 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+/**
+ * Main entry point for "Hungry Hungry Shimon" snake game.
+ * 
+ * Game flow:
+ * 1. Welcome screen - player enters name
+ * 2. Game play - snake moves, eats food, grows
+ * 3. Game over - player can restart (Y) or return to welcome (N)
+ * 4. ESC at any time exits the program completely
+ * 
+ * Memory management:
+ * - playerName: created per welcome screen, disposed after playGames
+ * - gameBoarders: created per playGames session, reused for restarts
+ * - game: created/disposed each game iteration
+ */
+class Main {
+  /**
+   * Main program entry point.
+   * Runs the outer game loop that handles welcome screens and name changes.
+   */
+  function void main() {
+    var String playerName;
+    var boolean keepPlaying;
+    
+    let keepPlaying = true;
+    
+    // Outer game loop - handles welcome screen and player name
+    while (keepPlaying) {
+      // Welcome screen
+      do Renderer.renderWelcomeScreen();
+      let playerName = Main.readPlayerName();
+      
+      // Play games with this name
+      let keepPlaying = Main.playGames(playerName);
+      
+      // Clean up name
+      do playerName.dispose();
+    }
+    
+    return;
+  }
+
+  /** 
+   * Manages game sessions for a given player name.
+   * Handles game creation, execution, and restart logic.
+   * 
+   * Memory management and ownership:
+   * - Creates gameBoarders ONCE, reuses for all restarts with same name
+   * - gameBoarders is owned by THIS function, NOT by individual games
+   * - Individual games must NOT dispose boarders
+   * - Disposes boarders only when exiting this function
+   * 
+   * @param playerName The name of the player
+   * @return true to continue to welcome screen, false to exit program
+   */
+  function boolean playGames(String playerName) {
+    var Boarders gameBoarders;
+    var Coordinate topLeft, bottomRight;
+    var SnakeGame game;
+    var boolean restart;
+    
+    // Create game boarders (0,0) to (20,15) - reused for all games with this name
+    let topLeft = Coordinate.new(0, 0);
+    let bottomRight = Coordinate.new(20, 15);
+    let gameBoarders = Boarders.new(topLeft, bottomRight);
+    
+    // Inner game loop (allows restart with same name)
+    let restart = true;
+    while (restart) {
+      // Create and run game (game does NOT own boarders)
+      let game = SnakeGame.new(gameBoarders, playerName);
+      do game.run();
+      
+      // Check if ESC was pressed
+      if (game.wasEscPressed()) {
+        // ESC pressed - clean up and exit completely
+        do game.dispose();
+        do gameBoarders.dispose();  // We own boarders, we dispose them
+        return false;  // Exit program
+      }
+      
+      // Ask if restart
+      let restart = game.askRestart();
+      do game.dispose();  // Game disposed, boarders remain for reuse
+    }
+    
+    // Player chose not to restart (pressed N) - clean up and return to welcome
+    do gameBoarders.dispose();  // We own boarders, we dispose them
+    
+    // Wait a bit so the 'N' key press doesn't get captured as first letter of name
+    do Sys.wait(300);
+    
+    return true;  // Continue to welcome screen
+  }
+
+  /** 
+   * Reads player name from keyboard input.
+   * Allows 1-6 characters. If player presses Enter with no input,
+   * defaults to "A".
+   * 
+   * Prevents backspace from erasing the welcome screen by tracking
+   * the cursor position and only allowing backspace on typed characters.
+   * 
+   * @return String containing the player's name
+   */
+  function String readPlayerName() {
+    var String name;
+    var char key;
+    var int length;
+    var int maxLength;
+    var int startRow, startCol;
+    
+    let name = String.new(6);
+    let length = 0;
+    let maxLength = 6;
+    
+    // Remember where name input starts (after "Enter name: ")
+    // Row 12, column ~38 (after the prompt)
+    let startRow = 12;
+    let startCol = 38;
+    
+    // Wait for Enter key (128 = newline)
+    let key = 0;
+    while (~(key = 128)) {
+      let key = Keyboard.readChar();
+      
+      // Handle backspace - only if we have characters to delete
+      if (key = 129) {  // backspace
+        if (length > 0) {
+          do name.eraseLastChar();
+          let length = length - 1;
+        } else {
+          // If no characters, move cursor back to start position
+          // to prevent erasing the prompt
+          do Output.moveCursor(startRow, startCol);
+        }
+      } else {
+        if (~(key = 128)) {  // not enter
+          if (length < maxLength) {
+            do name.appendChar(key);
+            let length = length + 1;
+          }
+        }
+      }
+    }
+    
+    // If empty name, set to "A"
+    if (length = 0) {
+      do name.appendChar(65);  // append 'A'
+    }
+    
+    do Output.println();
+    return name;
+  }
+}

@@ -1,0 +1,165 @@
+function Coordinate.new 0
+push constant 7
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push pointer 0
+call Coordinate.updateMemLocation 1
+pop temp 0
+push pointer 0
+call Coordinate.updatePixelPositions 1
+pop temp 0
+push pointer 0
+return
+function Coordinate.getX 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Coordinate.getY 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Coordinate.setX 0
+push argument 0
+pop pointer 0
+push argument 1
+pop this 0
+push pointer 0
+call Coordinate.updateMemLocation 1
+pop temp 0
+push pointer 0
+call Coordinate.updatePixelPositions 1
+pop temp 0
+push constant 0
+return
+function Coordinate.setY 0
+push argument 0
+pop pointer 0
+push argument 1
+pop this 1
+push pointer 0
+call Coordinate.updateMemLocation 1
+pop temp 0
+push pointer 0
+call Coordinate.updatePixelPositions 1
+pop temp 0
+push constant 0
+return
+function Coordinate.setCoord 0
+push argument 0
+pop pointer 0
+push pointer 0
+push argument 1
+call Coordinate.setX 2
+pop temp 0
+push pointer 0
+push argument 2
+call Coordinate.setY 2
+pop temp 0
+push pointer 0
+call Coordinate.updateMemLocation 1
+pop temp 0
+push pointer 0
+call Coordinate.updatePixelPositions 1
+pop temp 0
+push constant 0
+return
+function Coordinate.equals 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Coordinate.getX 1
+push argument 1
+call Coordinate.getX 1
+eq
+push pointer 0
+call Coordinate.getY 1
+push argument 1
+call Coordinate.getY 1
+eq
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+not
+return
+goto IF_END0
+label IF_FALSE0
+push constant 0
+return
+label IF_END0
+function Coordinate.updateMemLocation 1
+push argument 0
+pop pointer 0
+push this 1
+push constant 512
+call Math.multiply 2
+pop local 0
+push local 0
+push this 0
+add
+pop local 0
+push local 0
+pop this 2
+push constant 0
+return
+function Coordinate.getMemLocation 0
+push argument 0
+pop pointer 0
+push this 2
+return
+function Coordinate.updatePixelPositions 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 16
+call Math.multiply 2
+pop this 3
+push this 1
+push constant 16
+call Math.multiply 2
+pop this 4
+push this 3
+push constant 15
+add
+pop this 5
+push this 4
+push constant 15
+add
+pop this 6
+push constant 0
+return
+function Coordinate.getTopLeftXPixelPos 0
+push argument 0
+pop pointer 0
+push this 3
+return
+function Coordinate.getTopLeftYPixelPos 0
+push argument 0
+pop pointer 0
+push this 4
+return
+function Coordinate.getBottomRightXPixelPos 0
+push argument 0
+pop pointer 0
+push this 5
+return
+function Coordinate.getBottomRightYPixelPos 0
+push argument 0
+pop pointer 0
+push this 6
+return
+function Coordinate.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return

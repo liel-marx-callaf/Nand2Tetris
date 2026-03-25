@@ -1,0 +1,120 @@
+function Input.readDirection 2
+call Keyboard.keyPressed 0
+pop local 0
+push local 0
+push constant 140
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 140
+return
+label IF_FALSE0
+push local 0
+push constant 131
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+pop local 1
+label IF_FALSE1
+push local 0
+push constant 132
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 1
+pop local 1
+label IF_FALSE2
+push local 0
+push constant 133
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 2
+pop local 1
+label IF_FALSE3
+push local 0
+push constant 130
+eq
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 3
+pop local 1
+label IF_FALSE4
+push local 0
+push constant 130
+lt
+push local 0
+push constant 133
+gt
+or
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push constant 1
+neg
+return
+label IF_FALSE5
+push argument 0
+push constant 0
+eq
+push local 1
+push constant 2
+eq
+and
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+push constant 1
+neg
+return
+label IF_FALSE6
+push argument 0
+push constant 2
+eq
+push local 1
+push constant 0
+eq
+and
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push constant 1
+neg
+return
+label IF_FALSE7
+push argument 0
+push constant 1
+eq
+push local 1
+push constant 3
+eq
+and
+if-goto IF_TRUE8
+goto IF_FALSE8
+label IF_TRUE8
+push constant 1
+neg
+return
+label IF_FALSE8
+push argument 0
+push constant 3
+eq
+push local 1
+push constant 1
+eq
+and
+if-goto IF_TRUE9
+goto IF_FALSE9
+label IF_TRUE9
+push constant 1
+neg
+return
+label IF_FALSE9
+push local 1
+return

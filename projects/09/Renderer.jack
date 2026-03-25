@@ -1,0 +1,453 @@
+
+class Renderer {
+
+    /** Renders snake efficiently - clears old tail, draws new head */
+    function void renderSnake(Snake snake, int headDirection) {
+        var Coordinate head;
+        
+        // Draw snake head with correct direction
+        let head = snake.getHead();
+        do Renderer.drawHeadAtCoord(head, headDirection);
+        
+        return;
+    }
+
+    /** Draws entire frame */
+    function void render(Boarders boarders, Snake snake, Food food, int headDirection) {
+        var int i;
+        var int length;
+        var Coordinate coord;
+
+        // Clear screen
+        do Screen.clearScreen();
+
+        // Draw borders
+        do Renderer.drawBoarders(boarders);
+
+        // Get snake info
+        let length = snake.getLength();
+
+        // Draw snake body (all segments except head)
+        let i = 1;
+        while (i < length) {
+            let coord = snake.getBodyCoord(i);
+            do Renderer.drawSnakeBodyAtCoord(coord);
+            let i = i + 1;
+        }
+
+        // Draw snake head with correct direction
+        let coord = snake.getHead();
+        do Renderer.drawHeadAtCoord(coord, headDirection);
+
+        // Draw food
+        do Renderer.drawFoodAtCoord(food.getPosition());
+
+        return;
+    }
+
+    /** Draws food at given coordinate */
+    function void drawFoodAtCoord(Coordinate c) {
+        var int memLocation;
+        let memLocation = c.getMemLocation();
+        do Renderer.drawNandAtMemLoc(memLocation);
+        return;
+    }
+
+    /** Draws snake head at coordinate with given direction */
+    function void drawHeadAtCoord(Coordinate c, int direction) {
+        var int memLocation;
+        let memLocation = c.getMemLocation();
+        if (direction = 0) {  // up
+            do Renderer.drawHeadUpAtMemLoc(memLocation);
+        }
+        if (direction = 1) {  // right
+            do Renderer.drawHeadRightAtMemLoc(memLocation);
+        }
+        if (direction = 2) {  // down
+            do Renderer.drawHeadDownAtMemLoc(memLocation);
+        }
+        if (direction = 3) {  // left
+            do Renderer.drawHeadLeftAtMemLoc(memLocation);
+        }
+        return;
+    }
+
+    /** 
+     * Renders right panel with player name, score, and instructions.
+     * 
+     * @param playerName The player's name to display
+     * @param score The current score
+     * @param startCol The column where the panel starts
+     */
+    function void renderRightPanel(String playerName, int score, int startCol) {
+        // Player name (row 2)
+        do Output.moveCursor(2, startCol);
+        do Output.printString(playerName);
+        
+        // Score (row 4)
+        do Output.moveCursor(4, startCol);
+        do Output.printInt(score);
+        
+        // Instructions (row 20 - near bottom)
+        do Output.moveCursor(20, startCol);
+        do Output.printString("ESC: Quit");
+        
+        return;
+    }
+
+    /** Renders welcome screen */
+    function void renderWelcomeScreen() {
+        do Screen.clearScreen();
+        
+        // Center title (row 10, column ~22 for "Hungry Hungry Shimon")
+        do Output.moveCursor(10, 22);
+        do Output.printString("Hungry Hungry Shimon");
+        
+        // Prompt (row 12, column ~25)
+        do Output.moveCursor(12, 25);
+        do Output.printString("Enter name: ");
+        
+        return;
+    }
+
+    /** Renders game over message in right panel */
+    function void renderGameOver(String playerName, int score, boolean won, int startCol) {
+        var int safeCol;
+        
+        // Make sure we don't go past screen bounds (64 chars max)
+        let safeCol = startCol;
+        if (safeCol > 50) {
+            let safeCol = 44;
+        }
+        
+        // Game over message (row 6)
+        do Output.moveCursor(6, safeCol);
+        if (won) {
+            do Output.printString("You Won!");
+        } else {
+            do Output.printString("Game Over");
+        }
+        
+        // Player name (row 8)
+        do Output.moveCursor(8, safeCol);
+        do Output.printString(playerName);
+        
+        // Score (row 10)
+        do Output.moveCursor(10, safeCol);
+        do Output.printInt(score);
+        
+        // Restart prompt (row 12)
+        do Output.moveCursor(12, safeCol);
+        do Output.printString("Restart?");
+        
+        // Y/N on next line (row 13)
+        do Output.moveCursor(13, safeCol);
+        do Output.printString("(Y/N)");
+        
+        return;
+    }
+
+    /** Clears screen */
+    function void clear(){
+        do Screen.clearScreen();
+        return;
+    }
+
+    function void clearCoord(Coordinate c){
+        var int memLocation;
+        let memLocation = c.getMemLocation();
+        do Renderer.clearAtMemLoc(memLocation);
+        return;
+    }
+    
+    /** Draws boarders */
+    function void drawBoarders(Boarders boarders){
+        // var Array corners;
+        var Coordinate topLeft;
+        var Coordinate topRight;
+        var Coordinate bottomLeft;
+        var Coordinate bottomRight;
+        
+        do Screen.setColor(true);
+        let topLeft = boarders.getTopLeft();
+        let bottomRight = boarders.getBottomRight();
+        let topRight = Coordinate.new(bottomRight.getX(), topLeft.getY());
+        let bottomLeft = Coordinate.new(topLeft.getX(), bottomRight.getY());
+
+        // Top line
+        do Renderer.drawTopBorder(topLeft, topRight);
+
+        // Bottom line
+        do Renderer.drawBottomBorder(bottomLeft, bottomRight);
+
+        // Left line
+        do Renderer.drawLeftBorder(topLeft, bottomLeft);
+
+        // Right line
+        do Renderer.drawRightBorder(topRight, bottomRight);
+
+        return;
+    }
+
+    function void drawSnakeBodyAtCoord(Coordinate c){
+        var int memLocation;
+        let memLocation = c.getMemLocation();
+        do Renderer.drawBodyAtMemLoc(memLocation);
+        return;
+    }
+
+    function void drawTopBorder(Coordinate topLeft, Coordinate topRight) {
+        var int x1, y, x2; // used to draw lines
+        // do Screen.setColor(true);
+        
+        let x1 = topLeft.getTopLeftXPixelPos();
+        let y = topLeft.getTopLeftYPixelPos();
+        let x2 = topRight.getBottomRightXPixelPos();
+        // draw only if edge is within screen bounds
+        if (y > 0) {
+            let y = y - 1;
+            let x1 = x1 - 1;
+            let x2 = x2 + 1;
+            let x1 = Math.max(x1, 0);
+            let x2 = Math.min(x2, 511);
+            do Screen.drawLine(x1, y, x2, y);
+        }
+        return;
+    }
+
+    function void drawBottomBorder(Coordinate bottomLeft, Coordinate bottomRight) {
+        var int x1, y, x2; // used to draw lines
+        // do Screen.setColor(true);
+
+        let x1 = bottomLeft.getTopLeftXPixelPos();
+        let y = bottomLeft.getBottomRightYPixelPos();
+        let x2 = bottomRight.getBottomRightXPixelPos();
+        // draw only if edge is within screen bounds
+        if (y < 255) {
+            let y = y + 1;
+            let x1 = x1 - 1;
+            let x2 = x2 + 1;
+            let x1 = Math.max(x1, 0);
+            let x2 = Math.min(x2, 511);
+            do Screen.drawLine(x1, y, x2, y);
+        }
+        return;
+    }
+
+    function void drawLeftBorder(Coordinate topLeft, Coordinate bottomLeft) {
+        var int x, y1, y2; // used to draw lines
+        // do Screen.setColor(true);
+
+        let x = topLeft.getTopLeftXPixelPos();
+        let y1 = topLeft.getTopLeftYPixelPos();
+        let y2 = bottomLeft.getBottomRightYPixelPos();
+        // draw only if edge is within screen bounds
+        if (x > 0) {
+            let x = x - 1;
+            let y1 = y1 - 1;
+            let y2 = y2 + 1;
+            let y1 = Math.max(y1, 0);
+            let y2 = Math.min(y2, 255);
+            do Screen.drawLine(x, y1, x, y2);
+        }
+        return;
+    }
+
+    function void drawRightBorder(Coordinate topRight, Coordinate bottomRight) {
+        var int x, y1, y2; // used to draw lines
+        // do Screen.setColor(true);
+
+        let x = topRight.getBottomRightXPixelPos();
+        let y1 = topRight.getTopLeftYPixelPos();
+        let y2 = bottomRight.getBottomRightYPixelPos();
+        // draw only if edge is within screen bounds
+        if (x < 511) {
+            let x = x + 1;
+            let y1 = y1 - 1;
+            let y2 = y2 + 1;
+            let y1 = Math.max(y1, 0);
+            let y2 = Math.min(y2, 255);
+            do Screen.drawLine(x, y1, x, y2);
+        }
+        return;
+    }
+
+    // Helpers to draw specific shapes at given memory locations
+    // Helpers for Foods
+    function void drawNAtMemLoc(int location) {
+        var int memAddress;
+	    let memAddress = 16384+location;
+	    do Memory.poke(memAddress+0, -16381);
+	    do Memory.poke(memAddress+32, -16377);
+	    do Memory.poke(memAddress+64, -16369);
+	    do Memory.poke(memAddress+96, -16353);
+	    do Memory.poke(memAddress+128, -16325);
+	    do Memory.poke(memAddress+160, -16269);
+	    do Memory.poke(memAddress+192, -16157);
+	    do Memory.poke(memAddress+224, -15933);
+	    do Memory.poke(memAddress+256, -15485);
+	    do Memory.poke(memAddress+288, -14589);
+	    do Memory.poke(memAddress+320, -12797);
+	    do Memory.poke(memAddress+352, -9213);
+	    do Memory.poke(memAddress+384, -2045);
+	    do Memory.poke(memAddress+416, -4093);
+	    do Memory.poke(memAddress+448, -8189);
+	    do Memory.poke(memAddress+480, -16381);
+	    return;
+    }
+
+    function void drawNandAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 112);
+        do Memory.poke(memAddress+32, 208);
+        do Memory.poke(memAddress+64, 415);
+        do Memory.poke(memAddress+96, 415);
+        do Memory.poke(memAddress+128, 784);
+        do Memory.poke(memAddress+160, 784);
+        do Memory.poke(memAddress+192, 6672);
+        do Memory.poke(memAddress+224, -6640);
+        do Memory.poke(memAddress+256, -6640);
+        do Memory.poke(memAddress+288, 6672);
+        do Memory.poke(memAddress+320, 784);
+        do Memory.poke(memAddress+352, 784);
+        do Memory.poke(memAddress+384, 415);
+        do Memory.poke(memAddress+416, 415);
+	    do Memory.poke(memAddress+448, 208);
+	    do Memory.poke(memAddress+480, 112);
+	    return;
+    }
+
+    // Helpers for Snake
+    function void drawHeadDownAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -1);
+        do Memory.poke(memAddress+32, -1);
+        do Memory.poke(memAddress+64, -1);
+        do Memory.poke(memAddress+96, -2017);
+        do Memory.poke(memAddress+128, 30750);
+        do Memory.poke(memAddress+160, 28686);
+        do Memory.poke(memAddress+192, 28278);
+        do Memory.poke(memAddress+224, 31710);
+        do Memory.poke(memAddress+256, 28278);
+        do Memory.poke(memAddress+288, 24582);
+        do Memory.poke(memAddress+320, 26598);
+        do Memory.poke(memAddress+352, 31806);
+        do Memory.poke(memAddress+384, 31806);
+        do Memory.poke(memAddress+416, 2016);
+        do Memory.poke(memAddress+448, 0);
+        do Memory.poke(memAddress+480, 0);
+        return;
+    }
+
+    function void drawHeadLeftAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -4096);
+        do Memory.poke(memAddress+32, -8);
+        do Memory.poke(memAddress+64, -8);
+        do Memory.poke(memAddress+96, -744);
+        do Memory.poke(memAddress+128, -1128);
+        do Memory.poke(memAddress+160, -7492);
+        do Memory.poke(memAddress+192, -7260);
+        do Memory.poke(memAddress+224, -7900);
+        do Memory.poke(memAddress+256, -7900);
+        do Memory.poke(memAddress+288, -7260);
+        do Memory.poke(memAddress+320, -7492);
+        do Memory.poke(memAddress+352, -1128);
+        do Memory.poke(memAddress+384, -744);
+        do Memory.poke(memAddress+416, -8);
+        do Memory.poke(memAddress+448, -8);
+        do Memory.poke(memAddress+480, -4096);
+        return;
+    }
+
+    function void drawHeadUpAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 0);
+        do Memory.poke(memAddress+32, 0);
+        do Memory.poke(memAddress+64, 2016);
+        do Memory.poke(memAddress+96, 31806);
+        do Memory.poke(memAddress+128, 31806);
+        do Memory.poke(memAddress+160, 26598);
+        do Memory.poke(memAddress+192, 24582);
+        do Memory.poke(memAddress+224, 28278);
+        do Memory.poke(memAddress+256, 31710);
+        do Memory.poke(memAddress+288, 28278);
+        do Memory.poke(memAddress+320, 28686);
+        do Memory.poke(memAddress+352, 30750);
+        do Memory.poke(memAddress+384, -2017);
+        do Memory.poke(memAddress+416, -1);
+        do Memory.poke(memAddress+448, -1);
+        do Memory.poke(memAddress+480, -1);
+        return;
+    }
+
+    function void drawHeadRightAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 15);
+        do Memory.poke(memAddress+32, 8191);
+        do Memory.poke(memAddress+64, 8191);
+        do Memory.poke(memAddress+96, 6335);
+        do Memory.poke(memAddress+128, 6623);
+        do Memory.poke(memAddress+160, 15687);
+        do Memory.poke(memAddress+192, 9671);
+        do Memory.poke(memAddress+224, 9351);
+        do Memory.poke(memAddress+256, 9351);
+        do Memory.poke(memAddress+288, 9671);
+        do Memory.poke(memAddress+320, 15687);
+        do Memory.poke(memAddress+352, 6623);
+        do Memory.poke(memAddress+384, 6335);
+        do Memory.poke(memAddress+416, 8191);
+        do Memory.poke(memAddress+448, 8191);
+        do Memory.poke(memAddress+480, 15);
+        return;
+    }
+
+    function void drawBodyAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -16381);
+        do Memory.poke(memAddress+32, -1);
+        do Memory.poke(memAddress+64, 32766);
+        do Memory.poke(memAddress+96, 32766);
+        do Memory.poke(memAddress+128, 32766);
+        do Memory.poke(memAddress+160, 32766);
+        do Memory.poke(memAddress+192, 32766);
+        do Memory.poke(memAddress+224, 32766);
+        do Memory.poke(memAddress+256, 32766);
+        do Memory.poke(memAddress+288, 32766);
+        do Memory.poke(memAddress+320, 32766);
+        do Memory.poke(memAddress+352, 32766);
+        do Memory.poke(memAddress+384, 32766);
+        do Memory.poke(memAddress+416, 32766);
+        do Memory.poke(memAddress+448, -1);
+        do Memory.poke(memAddress+480, -16381);
+        return;
+    }
+
+    function void clearAtMemLoc(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, 0);
+        do Memory.poke(memAddress+32, 0);
+        do Memory.poke(memAddress+64, 0);
+        do Memory.poke(memAddress+96, 0);
+        do Memory.poke(memAddress+128, 0);
+        do Memory.poke(memAddress+160, 0);
+        do Memory.poke(memAddress+192, 0);
+        do Memory.poke(memAddress+224, 0);
+        do Memory.poke(memAddress+256, 0);
+        do Memory.poke(memAddress+288, 0);
+        do Memory.poke(memAddress+320, 0);
+        do Memory.poke(memAddress+352, 0);
+        do Memory.poke(memAddress+384, 0);
+        do Memory.poke(memAddress+416, 0);
+        do Memory.poke(memAddress+448, 0);
+        do Memory.poke(memAddress+480, 0);
+        return;
+    }
+}

@@ -1,0 +1,79 @@
+function Boarders.new 0
+push constant 2
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push pointer 0
+return
+function Boarders.contains 0
+push argument 0
+pop pointer 0
+push argument 1
+call Coordinate.getX 1
+push this 0
+call Coordinate.getX 1
+push constant 1
+sub
+gt
+push argument 1
+call Coordinate.getX 1
+push this 1
+call Coordinate.getX 1
+push constant 1
+add
+lt
+and
+push argument 1
+call Coordinate.getY 1
+push this 0
+call Coordinate.getY 1
+push constant 1
+sub
+gt
+and
+push argument 1
+call Coordinate.getY 1
+push this 1
+call Coordinate.getY 1
+push constant 1
+add
+lt
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+not
+return
+goto IF_END0
+label IF_FALSE0
+push constant 0
+return
+label IF_END0
+function Boarders.getTopLeft 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Boarders.getBottomRight 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Boarders.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Coordinate.dispose 1
+pop temp 0
+push this 1
+call Coordinate.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return

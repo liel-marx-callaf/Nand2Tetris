@@ -1,0 +1,48 @@
+/**
+ * Represents a food item in the Snake game.
+ * Food is placed at random valid coordinates and can be consumed by the snake.
+ */
+class Food {
+    field Coordinate position;  // Current position of the food
+
+    /** 
+     * Creates a new food item at the specified position.
+     * @param startPos The coordinate where the food should be placed
+     * @return This food object
+     */
+    constructor Food new(Coordinate startPos) {
+        let position = startPos;
+        return this;
+    }
+
+    /** 
+     * Updates the food's position to a new coordinate.
+     * Disposes the old coordinate to prevent memory leaks.
+     * @param c The new coordinate for the food
+     */
+    method void setPosition(Coordinate c) {
+        // dispose old coordinate to avoid memory leak
+        do position.dispose();
+        let position = c;
+        return;
+    }
+
+    /** 
+     * Returns the current position of the food.
+     * @return The coordinate where the food is located
+     */
+    method Coordinate getPosition() {
+        return position;
+    }
+
+    /** 
+     * Frees all memory allocated for this food object.
+     * Disposes the position coordinate and deallocates the object itself.
+     */
+    method void dispose() {
+        do position.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+    
+}

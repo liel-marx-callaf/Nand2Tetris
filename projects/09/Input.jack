@@ -1,0 +1,59 @@
+/**
+ * Input handling utility for the Snake game.
+ * Provides non-blocking keyboard input with direction validation.
+ */
+class Input {
+    /** 
+     * Reads keyboard input and returns a direction code.
+     * Validates input against the current pending direction to prevent
+     * invalid reversals (e.g., can't go left when heading right).
+     * 
+     * @param pendingDirection The direction currently pending (0=up, 1=right, 2=down, 3=left)
+     * @return Direction code: 0=up, 1=right, 2=down, 3=left, -1=no change, 140=ESC
+     */
+    function int readDirection(int pendingDirection) {
+        var char key;
+        var int newDirection;
+        
+        let key = Keyboard.keyPressed();
+        
+        // ESC key quits immediately
+        if (key = 140) {
+            return 140;
+        }
+        
+        // Check arrow keys and map to direction codes
+        if (key = 131) {  // up arrow
+            let newDirection = 0;
+        }
+        if (key = 132) {  // right arrow
+            let newDirection = 1;
+        }
+        if (key = 133) {  // down arrow
+            let newDirection = 2;
+        }
+        if (key = 130) {  // left arrow
+            let newDirection = 3;
+        }
+        if ((key < 130) | (key > 133)) {
+            return -1;  // no valid key pressed
+        }
+        
+        // Prevent reversal - check against pending direction
+        // This prevents rapid key presses from bypassing validation
+        if ((pendingDirection = 0) & (newDirection = 2)) {
+            return -1;  // can't reverse from up to down
+        }
+        if ((pendingDirection = 2) & (newDirection = 0)) {
+            return -1;  // can't reverse from down to up
+        }
+        if ((pendingDirection = 1) & (newDirection = 3)) {
+            return -1;  // can't reverse from right to left
+        }
+        if ((pendingDirection = 3) & (newDirection = 1)) {
+            return -1;  // can't reverse from left to right
+        }
+        
+        return newDirection;
+    }
+}

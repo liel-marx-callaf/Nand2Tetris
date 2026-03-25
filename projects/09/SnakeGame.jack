@@ -1,0 +1,417 @@
+
+/**
+One game phase:
+    read keyboard for direction
+    possibly update snake direction
+    move snake according to current direction
+    check for collision (game over) or food (grow)
+    update snake according to collision type
+    clear screen and render whole board
+    use fixed delay between each phase
+*/
+
+
+class SnakeGame {
+    field Snake snake;
+    field Food food;
+    field Boarders boarders;
+    field boolean running;
+    field int frameCounter;
+    field int inputDirection;  // current input direction for head sprite
+    field int pendingDirection;  // direction to apply at next movement
+    field int score;
+    field String playerName;
+    field int frameRate;  // milliseconds between frames
+    field int movementFrames;  // frames between snake movements
+    field int rightPanelCol;  // starting column for right panel
+    field Coordinate oldTail;  // track old tail position for clearing
+    field Coordinate oldHead;  // track old head position for redrawing as body
+    field boolean escPressed;  // track if ESC was pressed during game
+
+    /**
+     * Creates a new snake game with specified boundaries and player name.
+     * 
+     * @param gameBoarders The playing field boundaries (NOT owned by this game)
+     * @param name The player's name (NOT owned by this game, just referenced)
+     * @return This SnakeGame object
+     * 
+     * Memory ownership:
+     * - gameBoarders: NOT owned, caller retains ownership
+     * - name: NOT owned, caller retains ownership
+     * - snake, food, oldTail, oldHead: owned by this game, disposed in dispose()
+     */
+    constructor SnakeGame new(Boarders gameBoarders, String name) {
+        var Coordinate startSnake;
+        var Coordinate startFood;
+        var Coordinate topLeft, bottomRight;
+        var int gameWidth;
+
+        // Initialize constants
+        let frameRate = 50;  // 50ms per frame
+        let movementFrames = 4;  // move every 4 frames
+
+        // Store references (not owned by us)
+        let boarders = gameBoarders;
+        let playerName = name;
+
+        // Calculate right panel column based on boarders
+        let topLeft = boarders.getTopLeft();
+        let bottomRight = boarders.getBottomRight();
+        let gameWidth = (bottomRight.getX() - topLeft.getX()) + 1;  // inclusive width
+        // Each game block = 16 pixels, each char = 8 pixels, so 1 block = 2 chars
+        // Add 1 char gap, then start panel
+        let rightPanelCol = (gameWidth * 2) + 3;
+        // Ensure we don't exceed screen (64 chars max)
+        if (rightPanelCol > 60) {
+            let rightPanelCol = 44;
+        }
+
+        // Initialize random seed with some value
+        do Random.setSeed(123);
+
+        // Create snake
+        let startSnake = Coordinate.new(10, 7);
+        let snake = Snake.new(startSnake);
+        
+        let oldTail = null;
+        let oldHead = null;
+
+        // Create food
+        let startFood = RandomUtil.randomCoord(boarders);
+        // Ensure food doesn't spawn on snake
+        while (snake.hits(startFood)) {
+            do startFood.dispose();
+            let startFood = RandomUtil.randomCoord(boarders);
+        }
+        let food = Food.new(startFood);
+
+        let running = true;
+        let frameCounter = 0;
+        let inputDirection = 1;  // start moving right
+        let pendingDirection = 1;  // start moving right
+        let score = 0;
+        let escPressed = false;
+
+        return this;
+    }
+
+    /** Runs main game loop */
+    method void run() {
+        var int lastScore;
+        
+        // Initial render
+        do renderFull();
+        let lastScore = score;
+        
+        while (running) {
+            do handleInput();
+            do update();
+            do renderIncremental(lastScore);
+            let lastScore = score;
+            do Sys.wait(frameRate);
+        }
+        return;
+    }
+    
+    /** Processes user input and updates snake direction. */
+    method void handleInput() {
+        var int newDir;
+
+        // Check input against PENDING direction (not snake's actual direction)
+        // This prevents rapid key presses from bypassing the reversal check
+        let newDir = Input.readDirection(pendingDirection);
+
+        // Check for ESC
+        if (newDir = 140) {
+            let running = false;
+            let escPressed = true;
+            return;
+        }
+
+        // Update pending direction if valid input
+        // This will be applied at movement time with another validation
+        if (~(newDir = -1)) {
+            let pendingDirection = newDir;
+            let inputDirection = newDir;  // for visual feedback
+        }
+        return;
+    }
+
+    /** Returns true if ESC was pressed */
+    method boolean wasEscPressed() {
+        return escPressed;
+    }
+
+    /** Updates game state */
+    method void update() {
+        var Coordinate tempTail;
+        var Coordinate tempHead;
+        var int currentDir;
+        
+        // Increment frame counter
+        let frameCounter = frameCounter + 1;
+
+        // Move snake only on movement frames
+        if (~(frameCounter < movementFrames)) {
+            // Apply pending direction only if it's still valid at movement time
+            let currentDir = snake.getDirection();
+            
+            // Final validation: prevent reversal at movement time
+            if (~(((currentDir = 0) & (pendingDirection = 2)) |
+                  ((currentDir = 2) & (pendingDirection = 0)) |
+                  ((currentDir = 1) & (pendingDirection = 3)) |
+                  ((currentDir = 3) & (pendingDirection = 1)))) {
+                do snake.setDirection(pendingDirection);
+            }
+            
+            // Save old head position
+            if (~(oldHead = null)) {
+                do oldHead.dispose();
+            }
+            let tempHead = snake.getHead();
+            let oldHead = Coordinate.new(tempHead.getX(), tempHead.getY());
+            
+            // Save old tail position before moving
+            let tempTail = snake.getBodyCoord(snake.getLength() - 1);
+            if (~(oldTail = null)) {
+                do oldTail.dispose();
+            }
+            let oldTail = Coordinate.new(tempTail.getX(), tempTail.getY());
+            
+            // Move snake
+            do snake.move();
+            
+            // Check collisions
+            do checkCollisions();
+            
+            // Reset frame counter
+            let frameCounter = 0;
+        }
+        return;
+    }
+    
+    /**
+     * Renders the entire game state - used for initial render.
+     * Includes safety checks to prevent drawing at invalid coordinates.
+     */
+    method void renderFull() {
+        var int i;
+        var int length;
+        var Coordinate coord;
+        
+        do Screen.clearScreen();
+        do Renderer.drawBoarders(boarders);
+        
+        // Draw food only if in valid position
+        if (boarders.contains(food.getPosition())) {
+            do Renderer.drawFoodAtCoord(food.getPosition());
+        }
+        
+        // Draw entire snake
+        let length = snake.getLength();
+        let i = 1;
+        while (i < length) {
+            let coord = snake.getBodyCoord(i);
+            // Only draw if within bounds
+            if (boarders.contains(coord)) {
+                do Renderer.drawSnakeBodyAtCoord(coord);
+            }
+            let i = i + 1;
+        }
+        
+        // Draw head only if within bounds
+        let coord = snake.getHead();
+        if (boarders.contains(coord)) {
+            do Renderer.drawHeadAtCoord(coord, inputDirection);
+        }
+        
+        do Renderer.renderRightPanel(playerName, score, rightPanelCol);
+        return;
+    }
+
+    /**
+     * Renders only what changed - more efficient.
+     * Includes safety checks to prevent drawing at invalid coordinates.
+     * 
+     * @param lastScore The score from the previous frame (to detect changes)
+     */
+    method void renderIncremental(int lastScore) {
+        var Coordinate head;
+        
+        // Only redraw if snake actually moved
+        if (frameCounter = 0) {
+            // Clear old tail if it's not part of snake anymore AND it exists
+            if (~(oldTail = null)) {
+                if (~(snake.hits(oldTail))) {
+                    // Only clear if within valid bounds
+                    if (boarders.contains(oldTail)) {
+                        do Renderer.clearCoord(oldTail);
+                    }
+                }
+            }
+            
+            // Redraw old head position as body (only if it exists and valid)
+            if (~(oldHead = null)) {
+                if (boarders.contains(oldHead)) {
+                    do Renderer.drawSnakeBodyAtCoord(oldHead);
+                }
+            }
+            
+            // Draw new head only if within valid bounds
+            let head = snake.getHead();
+            if (boarders.contains(head)) {
+                do Renderer.drawHeadAtCoord(head, inputDirection);
+            }
+        } else {
+            // Just update head sprite if direction changed (only after first movement)
+            if (~(oldHead = null)) {
+                let head = snake.getHead();
+                // Only draw if within valid bounds
+                if (boarders.contains(head)) {
+                    do Renderer.drawHeadAtCoord(head, inputDirection);
+                }
+            }
+        }
+        
+        // Update score only if it changed
+        if (~(score = lastScore)) {
+            do Renderer.renderRightPanel(playerName, score, rightPanelCol);
+            // Redraw food after eating (only if valid)
+            if (boarders.contains(food.getPosition())) {
+                do Renderer.drawFoodAtCoord(food.getPosition());
+            }
+        }
+        
+        return;
+    }
+
+    /** Checks collisions */
+    method void checkCollisions() {
+        var Coordinate head;
+
+        let head = snake.getHead();
+
+        // Wall collision
+        if (~(boarders.contains(head))) {
+            do gameOver(false);
+            return;
+        }
+
+        // Self collision
+        if (snake.hitsSelf()) {
+            do gameOver(false);
+            return;
+        }
+
+        // Food collision
+        if (head.equals(food.getPosition())) {
+            do snake.grow();
+            let score = score + snake.getLength();
+            do respawnFood();
+        } else {
+            // No food eaten, discard tail
+            do snake.discardTail();
+        }
+
+        return;
+    }
+    
+    /** Places food at a valid random location using RandomUtil. */
+    method void respawnFood() {
+        var Coordinate c;
+        var int attempts;
+        var boolean found;
+
+        let attempts = 0;
+        let found = false;
+
+        // Try to find empty spot (max 100 attempts to avoid infinite loop)
+        while ((~found) & (attempts < 100)) {
+            let c = RandomUtil.randomCoord(boarders);
+            if (~(snake.hits(c))) {
+                let found = true;
+                do food.setPosition(c);
+            } else {
+                do c.dispose();
+            }
+            let attempts = attempts + 1;
+        }
+
+        // If no empty spot found, player won!
+        if (~found) {
+            do gameOver(true);
+        }
+
+        return;
+    }
+
+    /** Ends game */
+    method void gameOver(boolean won) {
+        let running = false;
+        do snake.kill();
+        do Renderer.renderGameOver(playerName, score, won, rightPanelCol);
+        return;
+    }
+
+    /**
+     * Returns true if player wants to restart.
+     * Waits for Y or N key press (case insensitive).
+     * Includes a small delay before checking keys to prevent
+     * carryover from previous inputs.
+     * 
+     * @return true if Y pressed, false if N pressed
+     */
+    method boolean askRestart() {
+        var char key;
+        var boolean waiting;
+        
+        // Small delay to prevent key carryover
+        do Sys.wait(200);
+        
+        let waiting = true;
+        
+        // Wait for Y or N
+        while (waiting) {
+            let key = Keyboard.keyPressed();
+            if (key = 89) {  // Y
+                let waiting = false;
+                return true;
+            }
+            if (key = 78) {  // N
+                let waiting = false;
+                return false;
+            }
+            if (key = 121) {  // y
+                let waiting = false;
+                return true;
+            }
+            if (key = 110) {  // n
+                let waiting = false;
+                return false;
+            }
+            do Sys.wait(50);
+        }
+        return false;
+    }
+
+    /**
+     * Frees all memory allocated for this game.
+     * Disposes: snake, food, oldTail, oldHead, and the game object itself.
+     * 
+     * IMPORTANT: Does NOT dispose boarders because they are owned by the 
+     * calling code (Main.playGames) and reused across game restarts.
+     */
+    method void dispose() {
+        do snake.dispose();
+        do food.dispose();
+        // Note: boarders NOT disposed here - owned by caller
+        if (~(oldTail = null)) {
+            do oldTail.dispose();
+        }
+        if (~(oldHead = null)) {
+            do oldHead.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+}

@@ -1,0 +1,172 @@
+function Main.main 2
+push constant 0
+not
+pop local 1
+label WHILE_EXP0
+push local 1
+not
+if-goto WHILE_END0
+call Renderer.renderWelcomeScreen 0
+pop temp 0
+call Main.readPlayerName 0
+pop local 0
+push local 0
+call Main.playGames 1
+pop local 1
+push local 0
+call String.dispose 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Main.playGames 5
+push constant 0
+push constant 0
+call Coordinate.new 2
+pop local 1
+push constant 20
+push constant 15
+call Coordinate.new 2
+pop local 2
+push local 1
+push local 2
+call Boarders.new 2
+pop local 0
+push constant 0
+not
+pop local 4
+label WHILE_EXP0
+push local 4
+not
+if-goto WHILE_END0
+push local 0
+push argument 0
+call SnakeGame.new 2
+pop local 3
+push local 3
+call SnakeGame.run 1
+pop temp 0
+push local 3
+call SnakeGame.wasEscPressed 1
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 3
+call SnakeGame.dispose 1
+pop temp 0
+push local 0
+call Boarders.dispose 1
+pop temp 0
+push constant 0
+return
+label IF_FALSE0
+push local 3
+call SnakeGame.askRestart 1
+pop local 4
+push local 3
+call SnakeGame.dispose 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push local 0
+call Boarders.dispose 1
+pop temp 0
+push constant 300
+call Sys.wait 1
+pop temp 0
+push constant 0
+not
+return
+function Main.readPlayerName 6
+push constant 6
+call String.new 1
+pop local 0
+push constant 0
+pop local 2
+push constant 6
+pop local 3
+push constant 12
+pop local 4
+push constant 38
+pop local 5
+push constant 0
+pop local 1
+label WHILE_EXP0
+push local 1
+push constant 128
+eq
+not
+not
+if-goto WHILE_END0
+call Keyboard.readChar 0
+pop local 1
+push local 1
+push constant 129
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 2
+push constant 0
+gt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 0
+call String.eraseLastChar 1
+pop temp 0
+push local 2
+push constant 1
+sub
+pop local 2
+goto IF_END1
+label IF_FALSE1
+push local 4
+push local 5
+call Output.moveCursor 2
+pop temp 0
+label IF_END1
+goto IF_END0
+label IF_FALSE0
+push local 1
+push constant 128
+eq
+not
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 2
+push local 3
+lt
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 0
+push local 1
+call String.appendChar 2
+pop temp 0
+push local 2
+push constant 1
+add
+pop local 2
+label IF_FALSE3
+label IF_FALSE2
+label IF_END0
+goto WHILE_EXP0
+label WHILE_END0
+push local 2
+push constant 0
+eq
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push local 0
+push constant 65
+call String.appendChar 2
+pop temp 0
+label IF_FALSE4
+call Output.println 0
+pop temp 0
+push local 0
+return

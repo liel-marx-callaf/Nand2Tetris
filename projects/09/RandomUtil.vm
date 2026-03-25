@@ -1,0 +1,76 @@
+function RandomUtil.setSeed 0
+push argument 0
+call Random.setSeed 1
+pop temp 0
+push constant 0
+return
+function RandomUtil.randomCoord 8
+push argument 0
+call Boarders.getTopLeft 1
+pop local 0
+push argument 0
+call Boarders.getBottomRight 1
+pop local 1
+push local 1
+call Coordinate.getX 1
+push local 0
+call Coordinate.getX 1
+sub
+push constant 1
+add
+pop local 2
+push local 1
+call Coordinate.getY 1
+push local 0
+call Coordinate.getY 1
+sub
+push constant 1
+add
+pop local 3
+push local 2
+push constant 1
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 1
+pop local 2
+label IF_FALSE0
+push local 3
+push constant 1
+lt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 1
+pop local 3
+label IF_FALSE1
+push local 2
+push local 3
+call Math.multiply 2
+pop local 4
+push local 4
+push constant 1
+sub
+call Random.randRange 1
+pop local 5
+push local 5
+push local 2
+call Math.divide 2
+pop local 7
+push local 5
+push local 7
+push local 2
+call Math.multiply 2
+sub
+pop local 6
+push local 0
+call Coordinate.getX 1
+push local 6
+add
+push local 0
+call Coordinate.getY 1
+push local 7
+add
+call Coordinate.new 2
+return

@@ -1,0 +1,146 @@
+
+
+class RendererTesting {
+
+    function void runTests() {
+        var Boarders boarders;
+        
+        let boarders = Boarders.new(Coordinate.new(0, 0), Coordinate.new(20, 15)); // sets boarders to be from (0,0) to (20,15), if it is smaller then we will see all the borders on screen
+        do Renderer.drawBoarders(boarders);
+        do RendererTesting.test4(boarders);
+        // while (false) {
+        //     do Renderer.drawBoarders(boarders);
+        //     do Sys.wait(500);
+        //     do Renderer.clear();
+        //     do Sys.wait(5); 
+        //     do RendererTesting.test1();
+        //     do Sys.wait(500);
+        //     do Renderer.clear();
+        //     do Sys.wait(5);
+        //     do RendererTesting.test2();
+        //     do Sys.wait(500);
+        //     do Renderer.clear();
+        //     do Sys.wait(5);
+        // }
+        // do RendererTesting.test1();
+        // do RendererTesting.test3();
+
+        // do Renderer.drawBoarders(boarders);
+        // do RendererTesting.test1();
+        // do RendererTesting.test2();
+        return;
+    }
+
+    function void test1() {
+      /* Prints some text using the standard library. */
+        var int x;
+        // var int tempx;
+        // var int tempy;
+        // var int y;
+        do Screen.setColor(true);
+        //   do Screen.drawCircle(100, 100, 50);
+        //   do Screen.drawLine();
+        let x = 0;
+        // let y = 0;
+        while (x < 32) {
+            // let tempy = y * 16;
+            // let tempx = (x * 16);
+            do Renderer.drawBodyAtMemLoc(x);
+            // do Screen.drawPixel(tempx, tempy);
+            // let tempx = tempx + 15;
+            // let tempy = tempy + 15;
+            // do Screen.drawPixel(tempx, tempy);
+            let x = x + 1;
+        }
+        let x = 512;
+        while (x < 520) {
+            do Renderer.drawBodyAtMemLoc(x);
+            let x = x + 1;
+        }
+        return;
+   }
+
+    function void test2(){
+        var Array coordArray;
+        var Coordinate coord;
+        var int i;
+        let coordArray = Array.new(10);
+        let i = 0;
+        while (i < 5){
+            let coordArray[i] = Coordinate.new(i, 1);
+            let i = i + 1;
+        }
+
+        while (i < 10){
+            let coordArray[i] = Coordinate.new(0, i);
+            let i = i + 1;
+        }
+        let i = 0;
+        while (i < 10){
+            let coord = coordArray[i];
+            do RendererTesting.drawHollowSquare(coord.getMemLocation());
+            let i = i + 1;
+        }
+
+        return;
+   }
+
+    function void test3(){
+        var Coordinate coord1, coord2, coord3, coord4, coord5, coord6;
+        let coord1 = Coordinate.new(5,5);
+        let coord2 = Coordinate.new(5,6);
+        let coord3 = Coordinate.new(5,7);
+        let coord4 = Coordinate.new(6,7);
+        let coord5 = Coordinate.new(7,7);
+        let coord6 = Coordinate.new(8,7);
+        do Renderer.drawSnakeBodyAtCoord(coord1);
+        do Renderer.drawSnakeBodyAtCoord(coord2);
+        do Renderer.drawSnakeBodyAtCoord(coord3);
+        do Renderer.drawSnakeBodyAtCoord(coord4);
+        do Renderer.drawSnakeBodyAtCoord(coord5);
+        do Renderer.drawSnakeBodyAtCoord(coord6);
+       return;
+    }
+
+    function void test4(Boarders boarders){
+        // Draws random coordinates within the given boarders
+        var Coordinate randCoord, tempCoord;
+        let tempCoord = Coordinate.new(0,0);
+        let randCoord = RandomUtil.randomCoord(boarders);
+        while (true){
+            while (randCoord.equals(tempCoord)) {
+                let randCoord = RandomUtil.randomCoord(boarders);
+                }
+            do Renderer.drawSnakeBodyAtCoord(randCoord);
+            let tempCoord = randCoord;
+            do Sys.wait(200);
+            do Renderer.clearCoord(randCoord);
+            }
+
+        return;
+    }
+
+   function void drawHollowSquare(int location) {
+        var int memAddress;
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -1);
+        do Memory.poke(memAddress+32, -32767);
+        do Memory.poke(memAddress+64, -32767);
+        do Memory.poke(memAddress+96, -32767);
+        do Memory.poke(memAddress+128, -32767);
+        do Memory.poke(memAddress+160, -32767);
+        do Memory.poke(memAddress+192, -32767);
+        do Memory.poke(memAddress+224, -32767);
+        do Memory.poke(memAddress+256, -32767);
+        do Memory.poke(memAddress+288, -32767);
+        do Memory.poke(memAddress+320, -32767);
+        do Memory.poke(memAddress+352, -32767);
+        do Memory.poke(memAddress+384, -32767);
+        do Memory.poke(memAddress+416, -32767);
+        do Memory.poke(memAddress+448, -32767);
+        do Memory.poke(memAddress+480, -1);
+        return;
+    }
+
+
+}

@@ -1,0 +1,53 @@
+
+/**
+ * Utility class for generating random values using the Random class.
+ */
+class RandomUtil {
+
+    function void setSeed(int newSeed){
+        do Random.setSeed(newSeed);
+        return;
+    }
+
+    // Returns a random Coordinate within the given Boarders
+    function Coordinate randomCoord(Boarders boarders){
+        // var int xRange, yRange, randX, randY;
+        // var Coordinate tempCoord;
+        // let tempCoord = boarders.getBottomRight(); // bottom right corner will have the max x and y
+        // let xRange = tempCoord.getX();
+        // let yRange = tempCoord.getY();
+        // let tempCoord = boarders.getTopLeft(); // top left corner will have the min x and y
+        // let xRange = xRange - tempCoord.getX();
+        // let yRange = yRange - tempCoord.getY();
+
+        // let randX =  Random.randRange(xRange) + tempCoord.getX();
+        // let randY =  Random.randRange(yRange) + tempCoord.getY();
+        // return Coordinate.new(randX, randY);
+
+        var Coordinate tl, br;
+        var int width, height, area;
+        var int index, xOff, yOff;
+
+        let tl = boarders.getTopLeft();
+        let br = boarders.getBottomRight();
+
+        // inclusive size: (br - tl) + 1
+        let width  = (br.getX() - tl.getX()) + 1;
+        let height = (br.getY() - tl.getY()) + 1;
+
+        // safety
+        if (width < 1)  { let width = 1; }
+        if (height < 1) { let height = 1; }
+
+        let area = Math.multiply(width, height);
+
+        // index in [0 .. area-1]
+        let index = Random.randRange(area - 1);
+
+        // map index -> (xOff, yOff)
+        let yOff = Math.divide(index, width);
+        let xOff = index - Math.multiply(yOff, width);
+
+        return Coordinate.new(tl.getX() + xOff, tl.getY() + yOff);
+    }
+}

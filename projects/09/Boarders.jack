@@ -1,0 +1,72 @@
+/**
+ * Represents the playable boundaries of the game.
+ * Defines a rectangular area where the snake can move.
+ * Coordinates are in 16x16 pixel blocks, not individual pixels.
+ */
+class Boarders {
+    field Coordinate topLeft;      // Top-left corner of play area
+    field Coordinate bottomRight;  // Bottom-right corner of play area
+
+    /** 
+     * Creates a new boundary with specified corners.
+     * @param newTopLeft Coordinate of the top-left corner (inclusive)
+     * @param newBottomRight Coordinate of the bottom-right corner (exclusive)
+     * @return This Boarders object
+     */
+    constructor Boarders new(Coordinate newTopLeft, Coordinate newBottomRight) {
+        let topLeft = newTopLeft;
+        let bottomRight = newBottomRight;
+        return this;
+    }
+
+    /** 
+     * Checks if a coordinate is inside the playable bounds.
+     * The coordinate can be ON the border coordinates (inclusive).
+     * 
+     * Example: If borders are (0,0) to (20,15):
+     *   - (0,0) is inside (valid - on top-left border)
+     *   - (20,15) is inside (valid - on bottom-right border)
+     *   - (-1,5) is outside (invalid)
+     *   - (21,10) is outside (invalid)
+     * 
+     * @param c The coordinate to check
+     * @return true if inside or on borders, false if outside
+     */
+    method boolean contains(Coordinate c){
+        // Coordinate (0,0) is top-left of screen, (31,15) is bottom-right
+        // Check if coordinate is within bounds (inclusive of borders)
+        if ((c.getX() > (topLeft.getX() - 1)) & (c.getX() < (bottomRight.getX() + 1)) &
+            (c.getY() > (topLeft.getY() - 1)) & (c.getY() < (bottomRight.getY() + 1))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** 
+     * Returns the top-left corner coordinate.
+     * @return The top-left Coordinate
+     */
+    method Coordinate getTopLeft(){
+        return topLeft;
+    }
+
+    /** 
+     * Returns the bottom-right corner coordinate.
+     * @return The bottom-right Coordinate
+     */
+    method Coordinate getBottomRight(){
+        return bottomRight;
+    }
+
+    /** 
+     * Frees all memory allocated for this object.
+     * Disposes both corner coordinates and the object itself.
+     */
+    method void dispose(){
+        do topLeft.dispose();
+        do bottomRight.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

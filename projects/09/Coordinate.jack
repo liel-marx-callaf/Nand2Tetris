@@ -1,0 +1,102 @@
+// A Coordinate represents a location on the screen in terms of 16x16 pixel blocks.
+// in this class we won't use built in arithmetic but use the Math class instead
+
+class Coordinate {
+    field int x, y, memLocation, tlxPos, tlyPos, brxPos, bryPos; //top left x pos, top left y pos, bottom right x pos, bottom right y pos
+
+    /** Creates a coordinate at (x, y)
+        where (0,0) is the top-left of the screen
+        and x increases to the right and y increases downwards 
+        where the bottom right is at (31, 15)*/
+    constructor Coordinate new(int newx, int newy) {
+        let x = newx;
+        let y = newy;
+        do updateMemLocation();
+        do updatePixelPositions();
+        return this;
+    }
+
+    /** Returns x */
+    method int getX(){
+        return x;
+    }
+
+    /** Returns y */
+    method int getY(){
+        return y;
+    }
+
+    /** Sets x */
+    method void setX(int newx){
+        let x = newx;
+        do updateMemLocation();
+        do updatePixelPositions();
+        return;
+    }
+
+    /** Sets y */
+    method void setY(int newy){
+        let y = newy;
+        do updateMemLocation();
+        do updatePixelPositions();
+        return;
+    }
+
+    /** Sets both x and y */
+    method void setCoord(int newx, int newy){
+        do setX(newx);
+        do setY(newy);
+        do updateMemLocation();
+        do updatePixelPositions();
+        return;
+    }
+
+    method boolean equals(Coordinate c){
+        if ((getX() = c.getX()) & (getY() = c.getY())){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    method void updateMemLocation(){
+        var int tempy;
+        let tempy = Math.multiply(y, 512);
+        let tempy = tempy + x;
+        let memLocation = tempy;
+        return;
+    }
+    method int getMemLocation(){
+        /*Used to get the memory location in the ram for the renderer */
+        return memLocation;
+    }
+
+    method void updatePixelPositions(){
+        let tlxPos = Math.multiply(x, 16);
+        let tlyPos = Math.multiply(y, 16);
+        let brxPos = tlxPos + 15;
+        let bryPos = tlyPos + 15;
+        return;
+    }
+
+    method int getTopLeftXPixelPos(){
+        return tlxPos;
+    }   
+    method int getTopLeftYPixelPos(){
+        return tlyPos;
+    }
+
+    method int getBottomRightXPixelPos(){
+        return brxPos;
+    }
+
+    method int getBottomRightYPixelPos(){
+        return bryPos;
+    }
+
+    /** Frees this coordinate */
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+}
