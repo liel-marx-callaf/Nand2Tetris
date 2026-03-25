@@ -1,0 +1,62 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Put your code here:
+	
+	// handle the ram input:
+	Not(in = address[14], out = isRam);
+	And(a = load, b = isRam, out = isRamLoad);
+	RAM16K(in=in ,load=isRamLoad ,address=address[0..13] ,out= rOut);
+	
+	// handle the screen input:
+	Not(in= address[13], out = notA1);
+	And(a= address[14], b = notA1, out = isScreen);
+	And(a= load ,b= isScreen ,out= isScreenLoad);
+	Screen(in=in ,load=isScreenLoad ,address=address[0..12] ,out= sOut);
+	
+	// handle reaching the keyboard
+	//first validate the address bus:
+	Or8Way(in[0]= isRam, in[1] = notA1, in[2..7]=address[7..12] ,out= firstHalfValid);
+	Or8Way(in[0..6]=address[0..6], in[7]=false ,out= secondHalfValid);
+	Or(a=firstHalfValid, b=secondHalfValid, out = notValid);
+	
+	// if the address is valid then it should return 0, so we will flip to not and get that this is the keyboard
+	Not(in=notValid, out=isKeyboard);
+	Keyboard(out=kOut);
+	
+	// we have flags for ram, screen and keyboard
+	// now we need to choose the correct output:
+	Mux4Way16(a=rOut ,b=rOut ,c=sOut ,d=kOut ,sel=address[13..14] ,out= out);
+	
+	// the left bit here is index 14 and not 0!
+	//110000000000000 -> keyboard
+	//110000000000001 -> invalid
+	//100000000000001
+	
+}

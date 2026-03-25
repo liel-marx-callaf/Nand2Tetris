@@ -1,0 +1,62 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+
+// The ExtendAlu chip is an extension of the standard ALU which also supports
+// shift operations.
+// The inputs of the extended ALU are instruction[9], x[16], y[16].
+// The "ng" and "zr" output pins behave the same as in the regular ALU.
+// The "out" output is defined as follows:
+// If instruction[8]=1 and instruction[7]=1 the output is identical to the 
+// regular ALU, where:
+// instruction[5]=zx, instruction[4]=nx, ..., instruction[0]=no
+// Else, if instruction[8]=0 and instruction[7]=1, the output is a shift:
+// - If instruction[4] == 0, the input "y" will be shifted, otherwise "x".
+// - If instruction[5] == 0, the shift will be a right-shift, otherwise left.
+// - All other inputs are undefined.
+
+CHIP ExtendAlu {
+     IN x[16], y[16], instruction[9];
+     OUT out[16], zr, ng;
+     
+     PARTS:
+     // Put your code here:
+     
+     // Calc regular ALU
+     
+     ALU(x=x, y=y, zx=instruction[5], nx=instruction[4], zy=instruction[3], ny=instruction[2], f=instruction[1], no=instruction[0], out=outALU, zr=zrALU, ng=ngALU);
+     
+     // Do all shifts
+     
+     ShiftRight(in=x, out=xrs);
+     ShiftRight(in=y, out=yrs);
+     ShiftLeft(in=x, out=xls);
+     ShiftLeft(in=y, out=yls);
+     
+     // Create flags according to instructions
+     
+     Not(in=instruction[8], out=isShifta);
+     And(a=isShifta, b=instruction[7], out=isShift);
+     And(a=isShift, b=instruction[4], out=isXShift);
+     
+     Mux16(a=xrs, b=xls, sel=instruction[5], out=xs);
+     Mux16(a=yrs, b=yls, sel=instruction[5], out=ys);
+     
+     Mux16(a=ys, b=xs, sel=isXShift, out=outShift, out[0..7]=outFirstHalf, out[8..15]=outSecondHalf, out[15]=ngShift);     
+     
+     // Check if shifted is zero
+     
+     Or8Way(in=outFirstHalf, out=orFirstHalf);
+	 Or8Way(in=outSecondHalf, out=orSecondHalf);
+	 Or(a=orFirstHalf, b=orSecondHalf, out=notzr);
+     Not(in=notzr, out=zrShift);
+     
+     // Choose between regular ALU and shifted
+     
+     Mux16(a=outALU, b=outShift, sel=isShift, out=out);
+     Mux(a=zrALU, b=zrShift, sel=isShift, out=zr);
+     Mux(a=ngALU, b=ngShift, sel=isShift, out=ng);
+}
